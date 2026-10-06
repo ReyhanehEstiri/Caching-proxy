@@ -1,2 +1,0 @@
-[console_scripts]
-caching-proxy = caching_proxy.cli:main
