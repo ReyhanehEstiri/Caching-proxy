@@ -1,6 +1,7 @@
 import argparse
 
 from .server import run_server
+from .cache import Cache
 
 
 def main():
@@ -11,17 +12,30 @@ def main():
     parser.add_argument(
         "--port",
         type=int,
-        required=True,
         help="Port to run the proxy on"
     )
 
     parser.add_argument(
         "--origin",
-        required=True,
         help="Origin server URL"
     )
 
+    parser.add_argument(
+        "--clear-cache",
+        action="store_true",
+        help="Clear the cache"
+    )
+
     args = parser.parse_args()
+
+    if args.clear_cache:
+        cache = Cache()
+        cache.clear()
+        print("Cache cleared.")
+        return
+
+    if args.port is None or args.origin is None:
+        parser.error("--port and --origin are required")
 
     run_server(args.port, args.origin)
 
