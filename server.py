@@ -4,8 +4,6 @@ from urllib.request import Request, urlopen
 from cache import Cache
 
 
-ORIGIN = "https://dummyjson.com"
-
 cache = Cache()
 
 
@@ -14,22 +12,27 @@ class ProxyHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         cache_key = self.path
 
+        # Check cache
         cached_response = cache.get(cache_key)
 
         if cached_response is not None:
             print("Cache HIT:", cache_key)
 
             self.send_response(200)
-            self.send_header("Content-Type", cached_response["content_type"])
+            self.send_header(
+                "Content-Type",
+                cached_response["content_type"]
+            )
             self.send_header("X-Cache", "HIT")
             self.end_headers()
 
             self.wfile.write(cached_response["body"])
             return
 
+        # Cache MISS
         print("Cache MISS:", cache_key)
 
-        origin_url = ORIGIN + self.path
+        origin_url = self.server.origin + self.path
 
         print("Forwarding request to:", origin_url)
 
@@ -47,6 +50,7 @@ class ProxyHandler(BaseHTTPRequestHandler):
                 "text/plain"
             )
 
+        # Save response in cache
         cache.set(
             cache_key,
             {
@@ -55,6 +59,7 @@ class ProxyHandler(BaseHTTPRequestHandler):
             }
         )
 
+        # Send response to client
         self.send_response(200)
         self.send_header("Content-Type", content_type)
         self.send_header("X-Cache", "MISS")
@@ -63,8 +68,12 @@ class ProxyHandler(BaseHTTPRequestHandler):
         self.wfile.write(body)
 
 
-server = HTTPServer(("localhost", 3000), ProxyHandler)
+def run_server(port, origin):
+    server = HTTPServer(("localhost", port), ProxyHandler)
 
-print("Caching proxy running on http://localhost:3000")
+    server.origin = origin
 
-server.serve_forever()
+    print(f"Caching proxy running on http://localhost:{port}")
+    print(f"Origin server: {origin}")
+
+    server.serve_forever()
