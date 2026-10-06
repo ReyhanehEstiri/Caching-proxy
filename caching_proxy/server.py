@@ -1,7 +1,7 @@
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.request import Request, urlopen
 
-from cache import Cache
+from .cache import Cache
 
 
 cache = Cache()

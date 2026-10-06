@@ -11,3 +11,6 @@ class Cache:
 
     def clear(self):
         self.data.clear()
+
+    def is_empty(self):
+        return len(self.data) == 0
